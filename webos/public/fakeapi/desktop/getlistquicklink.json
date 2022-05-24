@@ -1,0 +1,30 @@
+[
+  {
+    "id": "hello",
+    "icon": "/static/img/icon-quicklink.png",
+    "text": "hello",
+    "target": "/app/hello",
+    "singleton": true
+  },
+  {
+    "id": "json.cn",
+    "icon": "/static/img/icon-quicklink.png",
+    "text": "json.cn",
+    "target": "http://json.cn",
+    "singleton": true
+  },
+  {
+    "id": "vue",
+    "icon": "/static/img/icon-quicklink.png",
+    "text": "Vue官网",
+    "target": "https://v3.cn.vuejs.org/",
+    "singleton": true
+  },
+  {
+    "id": "bilibili",
+    "icon": "/static/img/icon-quicklink.png",
+    "text": "哔哩哔哩 噼里啪啦",
+    "target": "https://www.bilibili.com",
+    "singleton": true
+  }
+]

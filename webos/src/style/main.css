@@ -1,0 +1,15 @@
+/* margin */
+.m5{
+    margin:5px;
+}
+.m-rl5{
+    margin-left: 5px;
+    margin-right: 5px;
+}
+.m-tb5{
+    margin-top:5px;
+    margin-bottom: 5px;
+}
+.m10{
+    margin: 10px;
+}
