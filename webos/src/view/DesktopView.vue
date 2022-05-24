@@ -47,11 +47,18 @@
         v-for="item in ongoingWindowList"
         :key="item.id"
         :ref="recordDynamicApp"
+        :style="computePosition(item)"
         v-show="item.windowShowing"
       >
         <!-- 标题栏 -->
-        <div class="app-title-bar">
-          <div class="title">
+        <div
+          class="app-title-bar"
+          @mousedown="appWindowMouseDown($event, item)"
+          @mousemove="appWindowMouseMove($event, item)"
+          @mouseup="appWindowMouseUp($event, item)"
+          @mouseleave="appWindowMouseLeave($event, item)"
+        >
+          <div class="app-title">
             <span>{{ item.title }}</span>
           </div>
           <div class="app-title-bar-middle"></div>
@@ -89,6 +96,7 @@
 </template>
 
 <script lang="ts">
+import { useLoadingBar } from 'naive-ui'
 import { defineComponent, onBeforeUpdate, onUpdated, Ref, VNodeRef } from 'vue'
 
 class QuickLinkItem {
@@ -106,6 +114,9 @@ class OngoingWindowItem {
   windowShowing = false
   targetUrl = ''
   title = ''
+  isMoving = false
+  top = 100
+  left = 100
 }
 
 export default defineComponent({
@@ -118,7 +129,12 @@ export default defineComponent({
 
     return {
       quickLinkList,
-      ongoingWindowList
+      ongoingWindowList,
+      appWindowMoveAttr: {
+        offsetX: 0,
+        offsetY: 0,
+        isMoving: false
+      }
     }
   },
   mounted () {
@@ -138,24 +154,32 @@ export default defineComponent({
     onUpdated(() => {
       // console.log('ongoingWindowRefList', ongoingWindowRefList)
     })
+    const loadingBar = useLoadingBar()
 
     return {
       ongoingWindowRefList,
-      recordDynamicApp
+      recordDynamicApp,
+      loadingBar
     }
   },
   methods: {
+    computePosition (ongoingWindowItem: OngoingWindowItem) {
+      return `top:${ongoingWindowItem.top}px;left:${ongoingWindowItem.left}px;`
+    },
     // 获取快捷方式列表
     refreshQuickLinkList (): void {
+      this.loadingBar.start()
       this.axios
         .get('/fakeapi/desktop/getlistquicklink.json')
         .then((response) => {
+          this.loadingBar.finish()
           // console.log('response:', response)
           if (response.status === 200) {
             this.quickLinkList = response.data
           }
         })
         .catch((resaon) => {
+          this.loadingBar.error()
           console.log('resaon:', resaon)
         })
     },
@@ -221,6 +245,39 @@ export default defineComponent({
       this.$nextTick(() => {
         ongoingWindowItem.targetUrl = url
       })
+    },
+    appWindowMouseDown (
+      event: MouseEvent,
+      ongoingWindowItem: OngoingWindowItem
+    ) {
+      // 鼠标按下事件
+      this.appWindowMoveAttr.offsetX = event.offsetX
+      this.appWindowMoveAttr.offsetY = event.offsetY
+      ongoingWindowItem.isMoving = true
+    },
+    // 鼠标移动
+    appWindowMouseMove (
+      event: MouseEvent,
+      ongoingWindowItem: OngoingWindowItem
+    ) {
+      if (!ongoingWindowItem.isMoving) {
+        return
+      }
+      ongoingWindowItem.left =
+        ongoingWindowItem.left +
+        (event.offsetX - this.appWindowMoveAttr.offsetX)
+      ongoingWindowItem.top =
+        ongoingWindowItem.top + (event.offsetY - this.appWindowMoveAttr.offsetY)
+    },
+    // 鼠标抬起
+    appWindowMouseUp (event: MouseEvent, ongoingWindowItem: OngoingWindowItem) {
+      ongoingWindowItem.isMoving = false
+    },
+    appWindowMouseLeave (
+      event: MouseEvent,
+      ongoingWindowItem: OngoingWindowItem
+    ) {
+      this.appWindowMouseMove(event, ongoingWindowItem)
     }
   }
 })
@@ -344,11 +401,16 @@ footer {
   color: white;
   font-size: 16px;
   line-height: 40px;
-  padding: 0 10px;
+  padding-left: 10px;
+  cursor: move;
 }
 .app-title {
   flex-grow: 0;
   flex-shrink: 0;
+  line-height: 20px;
+  border-left: 2px solid #fff;
+  margin: 10px 5px;
+  padding-left: 10px;
 }
 .app-title-bar-middle {
   flex-grow: 1;
@@ -357,6 +419,7 @@ footer {
 .app-button-bar {
   flex-grow: 0;
   flex-shrink: 0;
+  cursor: pointer;
 }
 .app-button-bar i {
   padding: 0 5px;
