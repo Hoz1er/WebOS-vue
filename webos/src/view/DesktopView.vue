@@ -22,17 +22,28 @@
       <!-- 任务栏 -->
       <div class="task-bar">
         <!-- 开始菜单 -->
-        <div></div>
+        <div class="task-bar-left"></div>
         <!-- 已打开的窗口列表 -->
-        <div></div>
+        <!-- <div class="task-bar-windows"></div> -->
+        <el-scrollbar class="task-bar-windows">
+          <div
+            class="task-bar-windows-item"
+            v-for="item in ongoingWindowList"
+            :key="item.id"
+            @click="showOngoingWindow(item)"
+            :title="item.title"
+          >
+            <img :src="item.icon" alt="" />
+          </div>
+        </el-scrollbar>
         <!-- 托盘信息 -->
-        <div></div>
+        <div class="task-bar-right"></div>
       </div>
       <!-- 底部版权 -->
       <footer>
-        <a class="beian" href="https://beian.miit.gov.cn/" target="_blank"
-          >鲁ICP备18018145号</a
-        >
+        <a class="beian" href="https://beian.miit.gov.cn/" target="_blank">{{
+          beian
+        }}</a>
       </footer>
     </div>
     <!-- 主界面 end-->
@@ -96,7 +107,6 @@
 </template>
 
 <script lang="ts">
-import { useLoadingBar } from 'naive-ui'
 import { defineComponent, onBeforeUpdate, onUpdated, Ref, VNodeRef } from 'vue'
 
 class QuickLinkItem {
@@ -117,29 +127,11 @@ class OngoingWindowItem {
   isMoving = false
   top = 100
   left = 100
+  icon = ''
 }
 
 export default defineComponent({
   components: {},
-  data () {
-    // 快捷方式列表
-    const quickLinkList: QuickLinkItem[] = []
-    // 当前任务列表
-    const ongoingWindowList: OngoingWindowItem[] = []
-
-    return {
-      quickLinkList,
-      ongoingWindowList,
-      appWindowMoveAttr: {
-        offsetX: 0,
-        offsetY: 0,
-        isMoving: false
-      }
-    }
-  },
-  mounted () {
-    this.refreshQuickLinkList()
-  },
   setup () {
     // 当前任务对应的元素列表
     let ongoingWindowRefList: VNodeRef[] = []
@@ -154,32 +146,56 @@ export default defineComponent({
     onUpdated(() => {
       // console.log('ongoingWindowRefList', ongoingWindowRefList)
     })
-    const loadingBar = useLoadingBar()
 
     return {
       ongoingWindowRefList,
-      recordDynamicApp,
-      loadingBar
+      recordDynamicApp
     }
+  },
+  data () {
+    // 快捷方式列表
+    const quickLinkList: QuickLinkItem[] = []
+    // 当前任务列表
+    const ongoingWindowList: OngoingWindowItem[] = []
+
+    return {
+      quickLinkList,
+      ongoingWindowList,
+      appWindowMoveAttr: {
+        offsetX: 0,
+        offsetY: 0,
+        isMoving: false
+      },
+      beian: ''
+    }
+  },
+  mounted () {
+    this.refreshQuickLinkList()
+    this.getBeian()
   },
   methods: {
     computePosition (ongoingWindowItem: OngoingWindowItem) {
       return `top:${ongoingWindowItem.top}px;left:${ongoingWindowItem.left}px;`
     },
+    getBeian (): void {
+      this.axios.get('/fakeapi/basic/getbeian.json').then((response) => {
+        // console.log('response:', response)
+        if (response.status === 200) {
+          this.beian = response.data.beian
+        }
+      })
+    },
     // 获取快捷方式列表
     refreshQuickLinkList (): void {
-      this.loadingBar.start()
       this.axios
         .get('/fakeapi/desktop/getlistquicklink.json')
         .then((response) => {
-          this.loadingBar.finish()
           // console.log('response:', response)
           if (response.status === 200) {
             this.quickLinkList = response.data
           }
         })
         .catch((resaon) => {
-          this.loadingBar.error()
           console.log('resaon:', resaon)
         })
     },
@@ -211,6 +227,7 @@ export default defineComponent({
       item.windowIndex = 100
       item.windowShowing = false
       item.title = quickLinkItem.text
+      item.icon = quickLinkItem.icon
 
       this.ongoingWindowList.push(item)
       this.showOngoingWindow(item)
@@ -360,6 +377,40 @@ export default defineComponent({
   background-color: black;
   opacity: 0.8;
   height: 40px;
+  display: flex;
+  flex-direction: row;
+}
+.task-bar-left {
+  flex-shrink: 0;
+  flex-grow: 0;
+  width: 100px;
+}
+.task-bar-windows {
+  flex: 1;
+  width: 0;
+  position: relative;
+  height: 100%;
+  overflow: hidden;
+  white-space: nowrap;
+}
+.task-bar-windows-item {
+  display: inline-block;
+  width: 32px;
+  height: 32px;
+  margin: 4px;
+  cursor: pointer;
+}
+.task-bar-windows-item:hover {
+  box-shadow: 1px 1px 5px #e3e3e3;
+}
+.task-bar-windows-item img {
+  width: 100%;
+  height: 100%;
+}
+.task-bar-right {
+  flex-shrink: 0;
+  flex-grow: 0;
+  width: 300px;
 }
 
 footer {
