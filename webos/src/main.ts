@@ -8,24 +8,14 @@ import axios from 'axios'
 import './style/main.css'
 import 'font-awesome/css/font-awesome.min.css'
 
-import {
-  // create naive ui
-  create,
-  // component
-  NButton,
-  NLayout,
-  NScrollbar,
-  NLoadingBarProvider,
-  NText
-} from 'naive-ui'
-
-const naiveUI = create({
-  components: [NButton, NLayout, NScrollbar, NLoadingBarProvider, NText]
-})
+import ElementPlus from 'element-plus'
+import 'element-plus/dist/index.css'
 
 const app = createApp(App)
-app.use(store).use(router)
-
-app.use(VueAxios, axios).use(naiveUI)
+app
+  .use(store)
+  .use(router)
+  .use(VueAxios, axios)
+  .use(ElementPlus, { size: 'small', zIndex: 1000 })
 
 app.mount('#app')

@@ -4,25 +4,25 @@
     "icon": "/static/img/icon-quicklink.png",
     "text": "hello",
     "target": "/app/hello",
+    "singleton": false
+  },
+  {
+    "id": "element+",
+    "icon": "https://element-plus.gitee.io/images/element-plus-logo-small.svg",
+    "text": "element+组件文档",
+    "target": "https://element-plus.gitee.io/zh-CN/component/button.html",
     "singleton": true
   },
   {
-    "id": "json.cn",
-    "icon": "/static/img/icon-quicklink.png",
-    "text": "json.cn",
-    "target": "http://json.cn",
-    "singleton": true
-  },
-  {
-    "id": "vue",
-    "icon": "/static/img/icon-quicklink.png",
-    "text": "Vue官网",
-    "target": "https://v3.cn.vuejs.org/",
+    "id": "Bing",
+    "icon": "https://www.bing.com/favicon.ico",
+    "text": "Bing",
+    "target": "https://www.bing.com",
     "singleton": true
   },
   {
     "id": "bilibili",
-    "icon": "/static/img/icon-quicklink.png",
+    "icon": "https://www.bilibili.com/favicon.ico",
     "text": "哔哩哔哩 噼里啪啦",
     "target": "https://www.bilibili.com",
     "singleton": true
