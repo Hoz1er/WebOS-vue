@@ -1,5 +1,7 @@
 <template>
-  <router-view />
+  <n-loading-bar-provider>
+    <router-view />
+  </n-loading-bar-provider>
 </template>
 
 <style lang="scss">
@@ -9,7 +11,8 @@
   box-sizing: border-box;
 }
 
-body,#app {
+body,
+#app {
   width: 100vw;
   height: 100vh;
   overflow: hidden;
