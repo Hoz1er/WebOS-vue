@@ -27,10 +27,14 @@
         <!-- <div class="task-bar-windows"></div> -->
         <el-scrollbar class="task-bar-windows">
           <div
-            class="task-bar-windows-item"
             v-for="item in ongoingWindowList"
             :key="item.id"
-            @click="showOngoingWindow(item)"
+            :class="
+              item.windowShowing
+                ? 'task-bar-windows-item-active  task-bar-windows-item'
+                : 'task-bar-windows-item'
+            "
+            @click="trrigerOngoingWindowShowing(item)"
             :title="item.title"
           >
             <img :src="item.icon" alt="" />
@@ -246,6 +250,13 @@ export default defineComponent({
     hideOngoingWindow (ongoingWindowItem: OngoingWindowItem): void {
       ongoingWindowItem.windowShowing = false
     },
+    trrigerOngoingWindowShowing (ongoingWindowItem: OngoingWindowItem): void {
+      if (!ongoingWindowItem.windowShowing) {
+        this.showOngoingWindow(ongoingWindowItem)
+      } else {
+        this.hideOngoingWindow(ongoingWindowItem)
+      }
+    },
     // 关闭指定的窗口
     closeOngoingWindow (ongoingWindowItem: OngoingWindowItem): void {
       this.ongoingWindowList.forEach((element, index) => {
@@ -395,10 +406,13 @@ export default defineComponent({
 }
 .task-bar-windows-item {
   display: inline-block;
-  width: 32px;
-  height: 32px;
-  margin: 4px;
+  width: 36px;
+  height: 36px;
+  padding: 4px;
   cursor: pointer;
+}
+.task-bar-windows-item-active {
+  border-bottom: 1px solid #fff;
 }
 .task-bar-windows-item:hover {
   box-shadow: 1px 1px 5px #e3e3e3;
