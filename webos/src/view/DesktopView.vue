@@ -13,10 +13,11 @@
           class="shortcut-item"
           v-for="item in quickLinkList"
           v-bind:key="item.id"
+          @click="linkClick(item)"
+          :title="item.text"
         >
           <img class="shortcut-icon" alt="" :src="item.icon" />
           <div class="shortcut-text">{{ item.text }}</div>
-          <div class="shortcut-mask" @click="linkClick(item)"></div>
         </div>
       </div>
       <!-- 任务栏 -->
@@ -35,9 +36,9 @@
                 : 'task-bar-windows-item'
             "
             @click="trrigerOngoingWindowShowing(item)"
-            :title="item.title"
+            :title="item.quickLinkItem.text"
           >
-            <img :src="item.icon" alt="" />
+            <img :src="item.quickLinkItem.icon" alt="" />
           </div>
         </el-scrollbar>
         <!-- 托盘信息 -->
@@ -74,7 +75,7 @@
           @mouseleave="appWindowMouseLeave($event, item)"
         >
           <div class="app-title">
-            <span>{{ item.title }}</span>
+            <span>{{ item.quickLinkItem.text }}</span>
           </div>
           <div class="app-title-bar-middle"></div>
           <div class="app-button-bar">
@@ -99,7 +100,7 @@
         <div class="app-content">
           <iframe
             class="app-content-iframe"
-            :src="item.targetUrl"
+            :src="item.quickLinkItem.target"
             frameborder="0"
           ></iframe>
         </div>
@@ -123,15 +124,12 @@ class QuickLinkItem {
 class OngoingWindowItem {
   id = ''
   openTime!: Date
-  linkId = ''
   windowIndex = 0
   windowShowing = false
-  targetUrl = ''
-  title = ''
   isMoving = false
   top = 100
   left = 100
-  icon = ''
+  quickLinkItem: QuickLinkItem = new QuickLinkItem()
 }
 
 export default defineComponent({
@@ -208,30 +206,29 @@ export default defineComponent({
       if (item.singleton) {
         let exists = false
         this.ongoingWindowList.forEach((element) => {
-          if (element.linkId === item.id) {
+          if (element.quickLinkItem.id === item.id) {
             exists = true
             this.showOngoingWindow(element)
             return false
           }
         })
-        if (exists) {
-          return
+        if (!exists) {
+          this.addNewOngoingWindow(item)
         }
+      } else {
+        this.addNewOngoingWindow(item)
       }
-
-      this.addNewOngoingWindow(item)
     },
     // 添加新的窗口
     addNewOngoingWindow (quickLinkItem: QuickLinkItem): void {
       const item = new OngoingWindowItem()
       item.id = Math.floor(Math.random() * 10000).toString()
-      item.linkId = quickLinkItem.id
       item.openTime = new Date()
-      item.targetUrl = quickLinkItem.target
       item.windowIndex = 100
       item.windowShowing = false
-      item.title = quickLinkItem.text
-      item.icon = quickLinkItem.icon
+      item.quickLinkItem = JSON.parse(
+        JSON.stringify(quickLinkItem)
+      ) as QuickLinkItem
 
       this.ongoingWindowList.push(item)
       this.showOngoingWindow(item)
@@ -268,10 +265,10 @@ export default defineComponent({
     },
     // 刷新指定的窗口
     refreshOngoingWindow (ongoingWindowItem: OngoingWindowItem): void {
-      const url = ongoingWindowItem.targetUrl
-      ongoingWindowItem.targetUrl = ''
+      const url = ongoingWindowItem.quickLinkItem.target
+      ongoingWindowItem.quickLinkItem.target = ''
       this.$nextTick(() => {
-        ongoingWindowItem.targetUrl = url
+        ongoingWindowItem.quickLinkItem.target = url
       })
     },
     appWindowMouseDown (
@@ -341,20 +338,21 @@ export default defineComponent({
 }
 
 .shortcut-item {
-  width: 85px;
-  height: 90px;
+  width: 60px;
   margin: 5px;
+  cursor: pointer;
 }
 
 .shortcut-icon {
-  width: 48px;
-  height: 48px;
+  width: 32px;
+  height: 32px;
   display: block;
-  margin: 0 auto 2px auto;
+  margin: 0 auto;
 }
 
 .shortcut-text {
-  height: 35px;
+  max-height: 35px;
+  margin-top: 2px;
   overflow: hidden;
   text-overflow: ellipsis;
   word-wrap: break-word;
@@ -410,12 +408,15 @@ export default defineComponent({
   height: 36px;
   padding: 4px;
   cursor: pointer;
+  padding-bottom: 1px;
 }
 .task-bar-windows-item-active {
+  padding-bottom: 0;
   border-bottom: 1px solid #fff;
 }
 .task-bar-windows-item:hover {
-  box-shadow: 1px 1px 5px #e3e3e3;
+  padding-bottom: 0;
+  border-bottom: 1px solid #fff;
 }
 .task-bar-windows-item img {
   width: 100%;
