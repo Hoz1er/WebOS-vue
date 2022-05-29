@@ -1,22 +1,21 @@
 <template>
-  <div >
-  </div>
+  <div></div>
 </template>
 
 <script lang="ts">
-import { Options, Vue } from 'vue-class-component'
+import { defineComponent } from 'vue'
 
-@Options({
-  props: {
-    msg: String
-  }
+export default defineComponent({
+  components: {},
+  props: {},
+  setup () {},
+  data () {
+    return {}
+  },
+  mounted () {},
+  methods: {}
 })
-export default class TemplateVue extends Vue {
-  msg!: string
-}
 </script>
 
 <!-- Add "scoped" attribute to limit CSS to this component only -->
-<style scoped lang="scss">
-
-</style>
+<style scoped lang="scss"></style>

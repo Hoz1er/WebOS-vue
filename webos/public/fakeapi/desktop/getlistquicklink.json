@@ -7,6 +7,13 @@
     "singleton": false
   },
   {
+    "id": "calendar",
+    "icon": "/static/img/icon-quicklink.png",
+    "text": "日历",
+    "target": "/app/calendar",
+    "singleton": true
+  },
+  {
     "id": "element+",
     "icon": "https://element-plus.gitee.io/images/element-plus-logo-small.svg",
     "text": "element+组件文档",
