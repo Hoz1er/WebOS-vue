@@ -17,45 +17,49 @@
       <div class="week-item">五</div>
       <div class="week-item">六</div>
     </div>
-    <el-scrollbar height="750px">
-      <div class="calendar-box">
-        <div
-          v-for="item in calendarDateList"
-          :key="item.date"
-          :class="
-            item.date === currentDate
-              ? 'calendar-item calendar-item-today'
-              : item.diffMonth.length > 0
-              ? 'calendar-item calendar-item-diffmonth'
-              : 'calendar-item'
-          "
-        >
-          <div class="calendar-item-title">
-            <div class="calendar-item-date">
-              <span class="calendar-item-dayofmonth">{{
-                item.dayOfMonth
-              }}</span>
-              <span class="calendar-item-month" v-if="item.diffMonth.length > 0"
-                >{{ item.diffMonth }}月</span
-              >
+    <div class="calendar-box">
+      <el-scrollbar>
+        <div class="calendar-list">
+          <div
+            v-for="item in calendarDateList"
+            :key="item.date"
+            :class="
+              item.date === currentDate
+                ? 'calendar-item calendar-item-today'
+                : item.diffMonth.length > 0
+                ? 'calendar-item calendar-item-diffmonth'
+                : 'calendar-item'
+            "
+          >
+            <div class="calendar-item-title">
+              <div class="calendar-item-date">
+                <span class="calendar-item-dayofmonth">{{
+                  item.dayOfMonth
+                }}</span>
+                <span
+                  class="calendar-item-month"
+                  v-if="item.diffMonth.length > 0"
+                  >{{ item.diffMonth }}月</span
+                >
+              </div>
+              <i class="fa fa-plus task-plus">添加新任务</i>
             </div>
-            <i class="fa fa-plus task-plus">添加新任务</i>
+            <el-scrollbar>
+              <ul class="task-box">
+                <li
+                  class="task-item"
+                  v-for="taskItem in item.taskList"
+                  :key="taskItem.id"
+                  :title="taskItem.subject"
+                >
+                  {{ taskItem.subject }}
+                </li>
+              </ul>
+            </el-scrollbar>
           </div>
-          <el-scrollbar height="250px">
-            <ul class="task-box">
-              <li
-                class="task-item"
-                v-for="taskItem in item.taskList"
-                :key="taskItem.id"
-                :title="taskItem.subject"
-              >
-                {{ taskItem.subject }}
-              </li>
-            </ul>
-          </el-scrollbar>
         </div>
-      </div>
-    </el-scrollbar>
+      </el-scrollbar>
+    </div>
   </div>
 </template>
 
@@ -153,11 +157,16 @@ export default defineComponent({
 <!-- Add "scoped" attribute to limit CSS to this component only -->
 <style scoped lang="scss">
 .app {
+  height: 100%;
   background-color: #f6f5e3;
+  display: flex;
+  flex-direction: column;
 }
 .calendar-title {
   padding: 10px 0;
   font-size: 20px;
+  flex-grow: 0;
+  flex-shrink: 0;
 }
 .calendar-title i {
   margin-left: 10px;
@@ -167,6 +176,7 @@ export default defineComponent({
   background-color: #f37f56;
 }
 .week-box {
+  width: 100%;
   margin: 0 auto;
   display: flex;
   flex-direction: row;
@@ -174,8 +184,16 @@ export default defineComponent({
   justify-items: flex-start;
   justify-content: flex-start;
   flex-wrap: wrap;
+  flex-grow: 0;
+  flex-shrink: 0;
 }
 .calendar-box {
+  width: 100%;
+  height: 0;
+  flex-grow: 1;
+  flex-shrink: 1;
+}
+.calendar-list {
   margin: 0 auto;
   display: flex;
   flex-direction: row;
