@@ -127,8 +127,8 @@ class OngoingWindowItem {
   windowIndex = 0
   windowShowing = false
   isMoving = false
-  top = 100
-  left = 100
+  top = '5%'
+  left = '10%'
   quickLinkItem: QuickLinkItem = new QuickLinkItem()
 }
 
@@ -177,7 +177,7 @@ export default defineComponent({
   },
   methods: {
     computePosition (ongoingWindowItem: OngoingWindowItem) {
-      return `top:${ongoingWindowItem.top}px;left:${ongoingWindowItem.left}px;`
+      return `top:${ongoingWindowItem.top};left:${ongoingWindowItem.left};`
     },
     getBeian (): void {
       this.axios.get('/fakeapi/basic/getbeian.json').then((response) => {
@@ -450,10 +450,10 @@ footer {
   display: flex;
   flex-direction: column;
   position: fixed;
-  top: 10%;
-  left: 10%;
-  width: 70%;
-  height: 70%;
+  // top: 5%;
+  // left: 10%;
+  width: 80%;
+  height: 80%;
   z-index: 100;
 }
 .app-title-bar {
