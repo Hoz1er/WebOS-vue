@@ -17,6 +17,7 @@
       <div class="week-item">五</div>
       <div class="week-item">六</div>
     </div>
+    <el-divider class="calendar-divider" />
     <div class="calendar-box">
       <el-scrollbar>
         <div class="calendar-list">
@@ -42,7 +43,7 @@
                   >{{ item.diffMonth }}月</span
                 >
               </div>
-              <i class="fa fa-plus task-plus">添加新任务</i>
+              <i class="fa fa-plus task-plus"></i>
             </div>
             <el-scrollbar>
               <ul class="task-box">
@@ -52,6 +53,8 @@
                   :key="taskItem.id"
                   :title="taskItem.subject"
                 >
+                  <span v-if="taskItem.urgent === '1'">急</span>
+                  <span v-if="taskItem.delay === '1'">延</span>
                   {{ taskItem.subject }}
                 </li>
               </ul>
@@ -72,6 +75,9 @@ class TaskItem {
   subject = ''
   deadline = ''
   beginDate = ''
+  endDate = ''
+  urgent = '0'
+  delay = '0'
 }
 
 class CalendarDateItem {
@@ -86,15 +92,19 @@ export default defineComponent({
   props: {},
   data () {
     const calendarDateList: CalendarDateItem[] = []
-    const currentDate = this.getDateText(new Date())
+    const currentDate = this.$util.getDateText(new Date())
     const mainMonthFirstDate = new Date(currentDate.substring(0, 7) + '-01')
+    const currentTaskList: TaskItem[] = []
     return {
       mainMonthFirstDate,
       currentDate,
-      calendarDateList
+      calendarDateList,
+      currentGetTaskRequestId: '',
+      currentTaskList
     }
   },
   methods: {
+    // 生成日期列表
     generateDateList () {
       console.log('generateDateList')
       this.calendarDateList = []
@@ -105,50 +115,71 @@ export default defineComponent({
           currentMonthFirstDate.getDate() - currentMonthFirstDate.getDay() - 1
         )
       )
-      const monthStr = this.getDateText(this.mainMonthFirstDate).substring(0, 7)
+      const monthStr = this.$util
+        .getDateText(this.mainMonthFirstDate)
+        .substring(0, 7)
       for (let i = 0; i < 35; i++) {
         const item = new CalendarDateItem()
         const tempDate = new Date(beginDate.setDate(beginDate.getDate() + 1))
-        item.date = this.getDateText(tempDate)
+        item.date = this.$util.getDateText(tempDate)
         if (!item.date.startsWith(monthStr)) {
           item.diffMonth = tempDate.getMonth() + 1 + ''
         }
         item.dayOfMonth = tempDate.getDate() + ''
-        const taskItem = new TaskItem()
-        taskItem.id = '111'
-        taskItem.subject = '测试测试测试1111112222223333334444445555555'
-        item.taskList.push(taskItem)
-        item.taskList.push(taskItem)
-        item.taskList.push(taskItem)
-        item.taskList.push(taskItem)
-        item.taskList.push(taskItem)
-        item.taskList.push(taskItem)
-        item.taskList.push(taskItem)
-        item.taskList.push(taskItem)
-        item.taskList.push(taskItem)
-        item.taskList.push(taskItem)
-        item.taskList.push(taskItem)
-        item.taskList.push(taskItem)
-        item.taskList.push(taskItem)
-        item.taskList.push(taskItem)
-        item.taskList.push(taskItem)
-        item.taskList.push(taskItem)
-        item.taskList.push(taskItem)
-        item.taskList.push(taskItem)
-        item.taskList.push(taskItem)
         dateList.push(item)
       }
       this.calendarDateList = dateList
+      this.getTaskList()
     },
-    getDateText (date: Date): string {
-      return (
-        date.getFullYear().toString() +
-        '-' +
-        (date.getMonth() > 8 ? '' : '0') +
-        (date.getMonth() + 1) +
-        '-' +
-        (date.getDate() > 9 ? date.getDate() : '0' + date.getDate())
-      )
+    // 获取任务列表
+    getTaskList () {
+      this.currentTaskList = []
+      const currentId = this.$util.generateUUID()
+      this.currentGetTaskRequestId = currentId
+      this.axios
+        .get('/fakeapi/calendar/getlisttask.json')
+        .then((response) => {
+          if (currentId !== this.currentGetTaskRequestId) {
+            return
+          }
+          // console.log('response:', response)
+          if (response.status === 200) {
+            this.currentTaskList = response.data as TaskItem[]
+            this.calcCurrentTaskShow()
+          }
+        })
+        .catch((resaon) => {
+          console.log('resaon:', resaon)
+        })
+    },
+    // 计算每天的任务展示
+    calcCurrentTaskShow () {
+      const taskList = this.currentTaskList
+      if (taskList.length < 1) {
+        return
+      }
+
+      const dateList = this.calendarDateList
+      dateList.forEach((dateItem) => {
+        taskList.forEach((taskItem) => {
+          if (
+            taskItem.beginDate <= dateItem.date &&
+            (taskItem.endDate >= dateItem.date ||
+              (taskItem.endDate === '' &&
+                (taskItem.deadline === '' ||
+                  taskItem.deadline >= dateItem.date ||
+                  this.currentDate >= dateItem.date)))
+          ) {
+            const task = JSON.parse(JSON.stringify(taskItem)) as TaskItem
+            task.delay =
+              taskItem.deadline !== '' && taskItem.deadline < dateItem.date
+                ? '1'
+                : '0'
+            dateItem.taskList.push(task)
+          }
+        })
+      })
+      this.calendarDateList = dateList
     }
   }
 })
@@ -186,6 +217,9 @@ export default defineComponent({
   flex-wrap: wrap;
   flex-grow: 0;
   flex-shrink: 0;
+}
+.calendar-divider {
+  margin: 5px;
 }
 .calendar-box {
   width: 100%;
@@ -231,10 +265,8 @@ export default defineComponent({
 }
 .calendar-item-month {
   margin-left: 5px;
-  padding: 0 6px;
-  background-color: #abb0af;
-  color: #fff;
-  border-radius: 8px;
+  color: #abb0af;
+  font-size: 12px;
 }
 .calendar-item-title {
   padding: 5px;
@@ -243,6 +275,7 @@ export default defineComponent({
   justify-content: space-between;
 }
 .calendar-item-dayofmonth {
+  margin-left: 16px;
   font-size: 20px;
   font-weight: 800;
 }
@@ -261,8 +294,8 @@ export default defineComponent({
 .task-plus {
   background-color: #f37f56;
   color: #fff;
-  padding: 6px;
-  border-radius: 12px;
+  padding: 2px 8px;
+  border-radius: 6px;
   cursor: pointer;
 }
 </style>
